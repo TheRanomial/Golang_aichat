@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
 	"github.com/google/generative-ai-go/genai"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
 
@@ -81,9 +82,10 @@ func handleWebSocket(c *websocket.Conn) {
 }
 
 func streamResponse(message string, conn *websocket.Conn) {
+	godotenv.Load()
     fmt.Printf("message from user:%s\n", message)
     ctx := context.Background()
-    client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyBHwRstvXpQd4ETadlep6b-JxRE1ncRjhw"))
+    client, err := genai.NewClient(ctx, option.WithAPIKey(getEnv("GEMINI_KEY","")))
     if err != nil {
         fmt.Println("Error creating genai client:", err)
         return
@@ -122,6 +124,14 @@ func partToString(part genai.Part) string {
         fmt.Printf("Unsupported genai.Part type: %T\n", part)
         return ""
     }
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+
+	return fallback
 }
 
 
